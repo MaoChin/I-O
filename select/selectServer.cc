@@ -35,7 +35,7 @@ void handlerEvent(int listenSock, fd_set& readfds /* fd_set& writefds, fd_set& e
 	    if(FD_ISSET(listenSock, &readfds))
 	    {
 	    	std::string clientIp;
-	    	uint16_t clientPort;
+	    	uint16_t clientPorti = 0;
 
 	    	// 此时accept一定不会阻塞了，因为等的过程已经由select完成了
 	    	int sock = Sock::Accept(listenSock, &clientIp, &clientPort);
@@ -70,7 +70,7 @@ void handlerEvent(int listenSock, fd_set& readfds /* fd_set& writefds, fd_set& e
 				// 确定这个套接字的事件就绪了，进行相应事件的处理，这里为了简单，只进行读操作
 				char buffer[1024];
 				// 这里读取有问题：无法保证数据一定被读取完了！而下一次这些数据就没有了
-				ssize_t ret = recv(fdsArray[index], buffer, sizeof(buffer), 0); // 不会阻塞了！
+				ssize_t ret = recv(fdsArray[index], buffer, sizeof(buffer) - 1, 0); // 不会阻塞了！
 				if(ret > 0)
 				{
 					buffer[ret] = 0;
