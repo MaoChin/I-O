@@ -78,10 +78,10 @@ public:
 		  		break;
 		  	// 返回事件就绪的文件描述符的个数
 		  	default:
-		  		// std::cout << "listenSock is ready" << std::endl;
+		  		std::cout << "listenSock is ready" << std::endl;
 					// n>0表示就绪的文件描述符个数，就是revents的前n个！！
 					// 就不用像select和poll那样遍历整个文件描述符表！！
-		  		handlerEvent(revents, n);
+		  		// handlerEvent(revents, n);
 		  		break;
 		  }
 		}
