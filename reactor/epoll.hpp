@@ -26,7 +26,7 @@ public:
 		if(ret != 0)
 		{
 			std::cout << "epoll_ctl error: " << strerror(errno) << std::endl;
-			return false
+			return false;
 		}
 		return true;
 	}

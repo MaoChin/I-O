@@ -47,7 +47,7 @@ public:
 		socklen_t len = sizeof peer;
 		int serviceSock = accept(sockfd, (struct sockaddr*)&peer, &len);
 		if(serviceSock < 0)
-			return -1;
+			return serviceSock;
 
 		if(clientIp) *clientIp = inet_ntoa(peer.sin_addr);
 		if(clientPort) *clientPort = ntohs(peer.sin_port);
