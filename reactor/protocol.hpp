@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#define SEP 'X'
+#define SEP '\3'
 #define SEP_LEN (sizeof(SEP))
 
 // 自己定制协议，假设数据格式是 xxxxxx\3xxx\3xxxxxxxxxxxxxx\3

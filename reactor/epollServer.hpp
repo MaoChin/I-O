@@ -1,11 +1,10 @@
 #pragma once
 
-#include <asm-generic/errno-base.h>
-#include <asm-generic/errno.h>
 #include <cstdint>
 #include <iostream>
 #include <vector>
 #include <cerrno>
+#include <cassert>
 #include <sys/types.h>
 #include <unordered_map>
 #include <functional>
@@ -18,6 +17,7 @@
 #include "protocol.hpp"
 
 // 基于Reactor模式的EpollServer---ET工作模式
+// 单进程，即负责I/O，又负责事件派发; 还负责进行业务处理(这个后续可以使用多线程分出去)
 
 // 回调类型
 class EpollServer;
@@ -79,6 +79,7 @@ public:
 				else
 				{
 					std::cerr << "Sock::Accept error" << std::endl;
+					conn->excepter_(conn);
 					return -1;
 				}
   	  }
@@ -87,9 +88,10 @@ public:
 		   	<< clientPort << std::endl;
 		  // 针对不同的文件描述符设置不同的回调
   	  conn->R_->addConnection(newSock, EPOLLIN|EPOLLET, std::bind(&EpollServer::Recver, this, \
-		  			std::placeholders::_1), nullptr, nullptr);
+		  			std::placeholders::_1), std::bind(&EpollServer::Sender, this, std::placeholders::_1),\
+						std::bind(&EpollServer::Excepter, this, std::placeholders::_1));
 		}
-  	return newSock;
+  	return 0;
   }
 
 	int Recver(Connection* conn)
@@ -108,6 +110,7 @@ public:
 		  else if(ret == 0)
 		  {
 		  	std::cout << "对端关闭连接" << std::endl;
+				conn->excepter_(conn);
 				break;
 		  }
 		  else
@@ -128,6 +131,9 @@ public:
 				{
 					// 出错
 					std::cout << "recv error" << std::endl;
+					// 调用异常回调
+					conn->excepter_(conn);
+					break;
 				}
 		  }
 		}
@@ -146,11 +152,21 @@ public:
 	}
 	int Sender(Connection* conn)
 	{
+		// 这里也要死循环写！
 
 	}
 	int Excepter(Connection* conn)
 	{
+		assert(conn);
+		if(connections_.find(conn->sock_) != connections_.end())
+		{
+		  Epoll::EpollDel(epfd_, conn->sock_);
 
+		  // 先把套接字从epoll模型中去掉，然后关闭套接字
+		  close(conn->sock_);
+		  delete connections_[conn->sock_];
+			connections_.erase(conn->sock_);
+		}
 	}
 
 	void initServer()

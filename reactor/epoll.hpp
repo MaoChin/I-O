@@ -30,6 +30,29 @@ public:
 		}
 		return true;
 	}
+	static bool EpollMod(int epfd, int fd, uint32_t event)
+	{
+		struct epoll_event ev;
+		ev.data.fd = fd;
+		ev.events = event;
+		int ret = epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev);
+		if(ret != 0)
+		{
+			std::cout << "epoll_ctl error: " << strerror(errno) << std::endl;
+			return false;
+		}
+		return true;
+	}
+	static bool EpollDel(int epfd, int fd)
+	{
+		int ret = epoll_ctl(epfd, EPOLL_CTL_DEL, fd, nullptr);
+		if(ret != 0)
+		{
+			std::cout << "epoll_ctl error: " << strerror(errno) << std::endl;
+			return false;
+		}
+		return true;
+	}
 	static int EpollWait(int epfd, struct epoll_event* revs, int revs_num)
 	{
 		int timeout = -1;
